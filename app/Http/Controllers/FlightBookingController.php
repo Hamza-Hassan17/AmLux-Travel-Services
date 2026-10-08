@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\FlightBooking;
 use Barryvdh\DomPDF\Facade as PDF;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -103,7 +104,15 @@ class FlightBookingController extends Controller
             'origin_airport' => 'nullable|string|max:255',
             'destination_airport' => 'nullable|string|max:255',
             'departure_at' => 'required|date',
-            'arrival_at' => 'required|date|after:departure_at',
+            'arrival_at' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {
+                try {
+                    if (Carbon::parse($value)->lessThanOrEqualTo(Carbon::parse($request->input('departure_at')))) {
+                        $fail('The arrival must be after the departure.');
+                    }
+                } catch (\Throwable $e) {
+                    $fail('The arrival date/time is not valid.');
+                }
+            }],
             'cabin_class' => 'required|string|max:30',
             'adults' => 'required|integer|min:1|max:9',
             'seat' => 'nullable|string|max:10',
