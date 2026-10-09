@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Pagination\Paginator;
+use App\Models\Customer;
+use App\Models\FlightBooking;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,7 +27,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Paginator::useBootstrap();
+        View::composer('layouts.app', function ($view) {
+            $view->with([
+                'navFlights' => FlightBooking::count(),
+                'navCustomers' => Customer::count(),
+            ]);
+        });
+
         Schema::defaultStringLength(191);
     }
 }

@@ -1,24 +1,55 @@
 @extends('layouts.app')
 @section('title', 'Customers')
 @section('content')
-<div class="d-flex justify-content-between mb-3">
-    <h4>Customers</h4>
-    <a href="{{ route('customers.create') }}" class="btn btn-primary">+ Add Customer</a>
+<div class="page-head">
+    <div>
+        <div class="crumbs">Directory &nbsp;/&nbsp; Customers</div>
+        <h1>Customers</h1>
+    </div>
+    <div class="actions">
+        <a class="btn btn-red" href="{{ route('customers.create') }}">+ Add customer</a>
+    </div>
 </div>
-<div class="card"><div class="table-responsive">
-<table class="table table-hover mb-0">
-    <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Passport</th><th></th></tr></thead>
-    <tbody>
-    @forelse ($customers as $c)
-        <tr>
-            <td><a href="{{ route('customers.show', $c) }}">{{ $c->name }}</a></td>
-            <td>{{ $c->phone }}</td><td>{{ $c->email }}</td><td>{{ $c->passport_no }}</td>
-            <td><a class="btn btn-sm btn-danger" href="{{ route('flights.create', ['customer_id' => $c->id]) }}">Book flight</a></td>
-        </tr>
-    @empty
-        <tr><td colspan="5" class="text-center text-muted">No customers yet.</td></tr>
-    @endforelse
-    </tbody>
-</table></div></div>
-<div class="mt-3">{{ $customers->links() }}</div>
+
+<section class="panel panel-clip">
+    <form class="filters" method="GET" action="{{ route('customers.index') }}">
+        <input class="input grow" type="search" name="q" value="{{ $q }}" placeholder="Filter by name, phone, passport…">
+        <div class="result">
+            @if ($q) <a href="{{ route('customers.index') }}">Clear filter</a> @endif
+            <span>{{ $customers->total() }} {{ \Illuminate\Support\Str::plural('customer', $customers->total()) }}</span>
+        </div>
+    </form>
+
+    <div class="table-wrap">
+        <table class="data narrow">
+            <thead>
+                <tr><th>Name</th><th>Phone</th><th>Email</th><th>Passport</th><th class="right">Bookings</th><th></th></tr>
+            </thead>
+            <tbody>
+            @forelse ($customers as $c)
+                <tr class="row" data-href="{{ route('customers.show', $c) }}">
+                    <td><a class="strong" href="{{ route('customers.show', $c) }}">{{ $c->name }}</a><div class="sub">{{ $c->nationality }}</div></td>
+                    <td class="nowrap">{{ $c->phone }}</td>
+                    <td>{{ $c->email }}</td>
+                    <td class="mono">{{ $c->passport_no }}</td>
+                    <td class="right mono">{{ $c->flight_bookings_count }}</td>
+                    <td class="right"><a class="btn btn-ghost btn-sm" href="{{ route('flights.create', ['customer_id' => $c->id]) }}">Book flight</a></td>
+                </tr>
+            @empty
+                <tr><td colspan="6" class="empty">@if ($q) No customers match “{{ $q }}”. @else No customers yet. <a href="{{ route('customers.create') }}">Add the first one</a>. @endif</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @include('partials.pager', ['p' => $customers])
+</section>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelectorAll('tr.row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) { if (!e.target.closest('a')) location.href = tr.dataset.href; });
+    });
+</script>
+@endpush

@@ -11,6 +11,7 @@ Route::resource('customers', CustomerController::class)->only(['index', 'create'
 Route::get('/flights', [FlightBookingController::class, 'index'])->name('flights.index');
 Route::get('/flights/create', [FlightBookingController::class, 'create'])->name('flights.create');
 Route::post('/flights', [FlightBookingController::class, 'store'])->name('flights.store');
+Route::get('/flights/export', [FlightBookingController::class, 'export'])->name('flights.export');
 Route::get('/flights/{booking}', [FlightBookingController::class, 'show'])->name('flights.show');
 Route::get('/flights/{booking}/edit', [FlightBookingController::class, 'edit'])->name('flights.edit');
 Route::put('/flights/{booking}', [FlightBookingController::class, 'update'])->name('flights.update');

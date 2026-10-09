@@ -7,9 +7,21 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('customers.index', ['customers' => Customer::latest()->paginate(15)]);
+        $q = trim((string) $request->query('q'));
+
+        $customers = Customer::withCount('flightBookings')
+            ->when($q, function ($query) use ($q) {
+                $like = '%' . addcslashes($q, '%_\\') . '%';
+                $query->where(function ($w) use ($like) {
+                    $w->where('name', 'like', $like)->orWhere('phone', 'like', $like)
+                        ->orWhere('email', 'like', $like)->orWhere('passport_no', 'like', $like);
+                });
+            })
+            ->latest()->paginate(15)->withQueryString();
+
+        return view('customers.index', ['customers' => $customers, 'q' => $q]);
     }
 
     public function create()
