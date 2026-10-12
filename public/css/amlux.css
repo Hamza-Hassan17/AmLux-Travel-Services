@@ -233,7 +233,8 @@ table.data tbody tr.row:hover { background: #F3F8FF; }
 .top-actions { display: flex; gap: 24px; margin-bottom: 13px; }
 .top-actions .btn { height: 48px; }
 .top-actions .btn-ghost { width: 103px; }
-.top-actions .btn-navy { flex: 1; }
+.top-actions .btn-navy { flex: 1; min-width: 0; white-space: normal; text-align: center; line-height: 1.2; padding: 0 14px; }
+.top-actions .btn-ghost { flex: none; }
 
 .flight { margin-top: 15px; background: linear-gradient(180deg, var(--card-top) 0%, #fff 62%); overflow: hidden; }
 .flight-top { display: flex; align-items: center; gap: 14px; padding: 15px 20px 14px; }
@@ -306,6 +307,8 @@ table.data tbody tr.row:hover { background: #F3F8FF; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1560px) {
+    .top-actions { gap: 12px; }
+    .contact { grid-template-columns: 30px 96px minmax(0, 1fr); }
     .search { width: 46%; }
     .hero::before { right: 390px; width: 250px; height: 86px; bottom: 34px; }
 }
