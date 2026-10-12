@@ -13,7 +13,7 @@
 @section('content')
 <div class="page-head">
     <div>
-        <div class="crumbs"><a href="{{ route('flights.index') }}">Bookings</a> &nbsp;/&nbsp; <a href="{{ route('flights.index') }}">Flights</a> &nbsp;/&nbsp; {{ $booking->exists ? $booking->pnr : 'New' }}</div>
+        <div class="crumbs"><a href="{{ route('flights.index') }}">Bookings</a><span class="sep"></span><a href="{{ route('flights.index') }}">Flights</a><span class="sep"></span>{{ $booking->exists ? $booking->pnr : 'New' }}</div>
         <h1>{{ $booking->exists ? 'Edit flight booking' : 'New flight booking' }}</h1>
     </div>
 </div>
@@ -25,7 +25,7 @@
     <div class="form-layout">
         <div class="stack">
             <section class="panel">
-                <div class="panel-head">Customer &amp; booking reference</div>
+                <div class="panel-head"><x-icon name="user" />Customer &amp; booking reference</div>
                 <div class="panel-body grid">
                     <div class="field c6">
                         <label for="customer_id">Customer <span class="req">*</span></label>
@@ -43,7 +43,7 @@
             </section>
 
             <section class="panel">
-                <div class="panel-head">Flight details</div>
+                <div class="panel-head"><x-icon name="plane" />Flight details</div>
                 <div class="panel-body grid">
                     <div class="field c4"><label for="airline">Airline <span class="req">*</span></label><input id="airline" name="airline" class="input" value="{{ $v('airline') }}" required></div>
                     <div class="field c4"><label for="flight_no">Flight no. <span class="req">*</span></label><input id="flight_no" name="flight_no" class="input mono" value="{{ $v('flight_no') }}" required></div>
@@ -54,9 +54,9 @@
                     <div class="field c2"><label for="destination">To (IATA) <span class="req">*</span></label><input id="destination" name="destination" maxlength="3" class="input mono upper" value="{{ $v('destination') }}" required></div>
                     <div class="field c4"><label for="destination_airport">Arrival airport</label><input id="destination_airport" name="destination_airport" class="input" value="{{ $v('destination_airport') }}" placeholder="Dubai Int'l, Terminal 3"></div>
 
-                    <div class="field c3"><label for="departure_at">Departure <span class="req">*</span></label><input id="departure_at" type="datetime-local" name="departure_at" class="input" value="{{ $dt('departure_at') }}" required></div>
-                    <div class="field c3"><label for="arrival_at">Arrival <span class="req">*</span></label><input id="arrival_at" type="datetime-local" name="arrival_at" class="input" value="{{ $dt('arrival_at') }}" required></div>
-                    <div class="field c3">
+                    <div class="field c4"><label for="departure_at">Departure <span class="req">*</span></label><input id="departure_at" type="datetime-local" name="departure_at" class="input" value="{{ $dt('departure_at') }}" required></div>
+                    <div class="field c4"><label for="arrival_at">Arrival <span class="req">*</span></label><input id="arrival_at" type="datetime-local" name="arrival_at" class="input" value="{{ $dt('arrival_at') }}" required></div>
+                    <div class="field c2">
                         <label for="cabin_class">Class <span class="req">*</span></label>
                         <select id="cabin_class" name="cabin_class" class="select">
                             @foreach (['Economy', 'Premium Economy', 'Business', 'First'] as $cl)
@@ -64,7 +64,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="field c3"><label for="adults">Passengers (adults) <span class="req">*</span></label><input id="adults" type="number" name="adults" min="1" max="9" class="input mono" value="{{ $v('adults', 1) }}" required></div>
+                    <div class="field c2"><label for="adults">Adults <span class="req">*</span></label><input id="adults" type="number" name="adults" min="1" max="9" class="input mono" value="{{ $v('adults', 1) }}" required></div>
 
                     <div class="field c3"><label for="seat">Seat</label><input id="seat" name="seat" class="input" value="{{ $v('seat') }}"></div>
                     <div class="field c5"><label for="baggage">Baggage</label><input id="baggage" name="baggage" class="input" value="{{ $v('baggage') }}" placeholder="30 KG Check-in + 7 KG Cabin"></div>
@@ -73,7 +73,7 @@
             </section>
 
             <section class="panel">
-                <div class="panel-head">Fare &amp; payment</div>
+                <div class="panel-head"><x-icon name="coins" />Fare &amp; payment</div>
                 <div class="panel-body grid">
                     <div class="field c2"><label for="currency">Currency <span class="req">*</span></label><input id="currency" name="currency" maxlength="3" class="input mono upper" value="{{ $v('currency', 'PKR') }}" required></div>
                     <div class="field c3"><label for="base_fare">Base fare <span class="req">*</span></label><input id="base_fare" type="number" step="0.01" min="0" name="base_fare" class="input mono" value="{{ $v('base_fare') }}" required></div>
@@ -104,7 +104,7 @@
         </div>
 
         <aside class="panel summary">
-            <div class="panel-head">Fare summary</div>
+            <div class="panel-head"><x-icon name="coins" />Fare summary</div>
             <div class="panel-body">
                 <div class="sum-rows">
                     <div class="sum-row"><span>Base fare</span><span class="mono" data-sum="base_fare">0</span></div>

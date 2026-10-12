@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FlightBookingController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/flights');
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::resource('customers', CustomerController::class)->only(['index', 'create', 'store', 'show']);
 

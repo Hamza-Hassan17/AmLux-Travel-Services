@@ -1,95 +1,120 @@
 @extends('layouts.app')
 @section('title', 'Booking ' . $booking->pnr)
 @section('content')
-@php $inv = $booking->invoice; $c = $booking->customer; @endphp
+@php
+    use App\Support\Airports;
+    $inv = $booking->invoice;
+    $c = $booking->customer;
+    $originCity = Airports::city($booking->origin, $booking->origin_airport);
+    $destCity = Airports::city($booking->destination, $booking->destination_airport);
+    $sameDay = $booking->arrival_at->isSameDay($booking->departure_at);
+    $carrier = Airports::carrierCode($booking->flight_no, $booking->airline);
+@endphp
 
-<div class="crumbs"><a href="{{ route('flights.index') }}">Bookings</a> &nbsp;/&nbsp; <a href="{{ route('flights.index') }}">Flights</a> &nbsp;/&nbsp; {{ $booking->pnr }}</div>
-
-<div class="detail-head">
-    <div class="ref">
-        <div class="sub">Booking reference</div>
-        <div class="ref-line">
-            <span class="ref-pnr">{{ $booking->pnr }}</span>
-            <x-status :value="$booking->status" />
+<div class="detail">
+    <div class="detail-left">
+        <div class="crumbs">
+            <a href="{{ route('flights.index') }}">Bookings</a><span class="sep"></span>
+            <a href="{{ route('flights.index') }}">Flights</a><span class="sep"></span>
+            <b>{{ $booking->pnr }}</b>
         </div>
-    </div>
-    <div class="actions">
-        <a class="btn btn-ghost" href="{{ route('flights.edit', $booking) }}">Edit</a>
-        <a class="btn btn-navy" href="{{ route('flights.invoice', $booking) }}">Download invoice &amp; e-ticket (PDF)</a>
-    </div>
-</div>
 
-<div class="detail-grid">
-    <div class="stack">
-        <section class="panel">
-            <div class="route">
-                <div class="route-top">
-                    <span>{{ $booking->airline }} · <span class="mono">{{ $booking->flight_no }}</span>@if ($booking->aircraft) · {{ $booking->aircraft }}@endif</span>
-                    <span>{{ $booking->departure_at->format('D, d M Y') }}</span>
+        <div class="ref">
+            <div class="lbl">Booking Reference</div>
+            <div class="ref-line">
+                <span class="ref-pnr">{{ $booking->pnr }}</span>
+                <x-status :value="$booking->status" />
+            </div>
+        </div>
+
+        <section class="panel flight">
+            <div class="flight-top">
+                <div class="al-tile" style="background: {{ Airports::carrierColor($booking->airline) }}"><b>{{ $carrier }}</b><span>{{ \Illuminate\Support\Str::limit($booking->airline, 12, '') }}</span></div>
+                <div>
+                    <div class="al-name">{{ $booking->airline }}</div>
+                    <div class="al-sub">{{ $booking->flight_no }}@if ($booking->aircraft)<i>•</i>{{ $booking->aircraft }}@endif</div>
                 </div>
-                <div class="route-line">
-                    <div class="route-end">
-                        <span class="iata">{{ $booking->origin }}</span>
-                        <span class="sub">{{ $booking->origin_airport ?: 'Departure' }}</span>
-                        <span class="mono strong">{{ $booking->departure_at->format('h:i A') }}</span>
-                    </div>
-                    <div class="route-mid"><i></i><span>{{ $booking->duration }} · {{ $booking->cabin_class }}</span></div>
-                    <div class="route-end r">
-                        <span class="iata">{{ $booking->destination }}</span>
-                        <span class="sub">{{ $booking->destination_airport ?: 'Arrival' }}</span>
-                        <span class="mono strong">{{ $booking->arrival_at->format('h:i A') }}@if (! $booking->arrival_at->isSameDay($booking->departure_at)) <span class="sub">· {{ $booking->arrival_at->format('d M') }}</span>@endif</span>
-                    </div>
+                <div class="flight-meta">
+                    <span class="fdate"><x-icon name="calendar-days" />{{ $booking->departure_at->format('D, d M Y') }}</span>
+                    <span class="cabin-pill">{{ $booking->cabin_class }}</span>
+                </div>
+            </div>
+
+            <div class="flight-route">
+                <img class="sk-l" src="{{ asset('img/skyline-left.svg') }}" alt="">
+                <img class="sk-r" src="{{ asset('img/skyline-right.svg') }}" alt="">
+                <div class="rp">
+                    <span class="code">{{ $booking->origin }}</span>
+                    @if ($originCity)<span class="city">{{ $originCity }}</span>@endif
+                    @if ($booking->origin_airport)<span class="apt">{{ $booking->origin_airport }}</span>@endif
+                    <span class="time">{{ $booking->departure_at->format('h:i A') }}</span>
+                </div>
+                <div class="rmid">
+                    <div class="line"><span class="plane"><x-icon name="plane" /></span></div>
+                    <div class="dur">{{ $booking->duration }}<i>•</i>{{ $booking->cabin_class }}</div>
+                </div>
+                <div class="rp r">
+                    <span class="code">{{ $booking->destination }}</span>
+                    @if ($destCity)<span class="city">{{ $destCity }}</span>@endif
+                    @if ($booking->destination_airport)<span class="apt">{{ $booking->destination_airport }}</span>@endif
+                    <span class="time">{{ $booking->arrival_at->format('h:i A') }}@if (! $sameDay)<small>+ {{ $booking->arrival_at->format('d M') }}</small>@endif</span>
                 </div>
             </div>
         </section>
 
-        <section class="panel">
-            <div class="panel-head">Itinerary details</div>
-            <div class="panel-body dl-2">
-                <div class="item"><span>E-ticket no.</span><span class="mono">{{ $booking->ticket_no ?: '—' }}</span></div>
-                <div class="item"><span>Passengers</span><span>{{ $booking->adults }} {{ \Illuminate\Support\Str::plural('adult', $booking->adults) }}</span></div>
-                <div class="item"><span>Cabin class</span><span>{{ $booking->cabin_class }}</span></div>
-                <div class="item"><span>Seat</span><span>{{ $booking->seat ?: '—' }}</span></div>
-                <div class="item"><span>Baggage</span><span>{{ $booking->baggage ?: '—' }}</span></div>
-                <div class="item"><span>Meal</span><span>{{ $booking->meal ?: '—' }}</span></div>
-                <div class="item"><span>Departure</span><span>{{ $booking->departure_at->format('d M Y, h:i A') }}</span></div>
-                <div class="item"><span>Arrival</span><span>{{ $booking->arrival_at->format('d M Y, h:i A') }}</span></div>
+        <section class="panel itin">
+            <div class="panel-head"><x-icon name="suitcase" />Itinerary Details</div>
+            <div class="itin-grid">
+                <div class="it"><span class="it-ic"><x-icon name="ticket" /></span><span class="it-t"><span class="l">E-ticket no.</span><span class="v">{{ $booking->ticket_no ?: '—' }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="user" /></span><span class="it-t"><span class="l">Passengers</span><span class="v">{{ $booking->adults }} {{ \Illuminate\Support\Str::plural('adult', $booking->adults) }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="chair" /></span><span class="it-t"><span class="l">Cabin class</span><span class="v">{{ $booking->cabin_class }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="chair" /></span><span class="it-t"><span class="l">Seat</span><span class="v">{{ $booking->seat ?: '—' }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="suitcase" /></span><span class="it-t"><span class="l">Baggage</span><span class="v">{{ $booking->baggage ?: '—' }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="utensils" /></span><span class="it-t"><span class="l">Meal</span><span class="v">{{ $booking->meal ?: '—' }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="calendar-days" /></span><span class="it-t"><span class="l">Departure</span><span class="v">{{ $booking->departure_at->format('d M Y, h:i A') }}</span></span></div>
+                <div class="it"><span class="it-ic"><x-icon name="calendar-days" /></span><span class="it-t"><span class="l">Arrival</span><span class="v">{{ $booking->arrival_at->format('d M Y, h:i A') }}</span></span></div>
             </div>
         </section>
     </div>
 
-    <div class="stack">
+    <div class="detail-right">
+        <div class="top-actions">
+            <button type="button" class="btn btn-ghost" onclick="window.print()"><x-icon name="print" />Print</button>
+            <a class="btn btn-navy" href="{{ route('flights.invoice', $booking) }}"><x-icon name="download" />Download Invoice &amp; e-ticket (PDF)</a>
+        </div>
+
         <section class="panel">
-            <div class="panel-head">Lead passenger</div>
-            <div class="panel-body">
-                <div class="person" style="margin-bottom:16px">
+            <div class="panel-head"><x-icon name="user" />Lead Passenger</div>
+            <div class="lead-body">
+                <div class="person">
                     <div class="avatar">{{ $c->initials }}</div>
-                    <div><a class="strong" href="{{ route('customers.show', $c) }}">{{ $c->name }}</a><div class="sub">{{ $c->nationality }}</div></div>
+                    <div>
+                        <a class="nm" href="{{ route('customers.show', $c) }}">{{ $c->name }}</a>
+                        <div class="nat">{{ $c->nationality }}@include('partials.flag', ['nationality' => $c->nationality])</div>
+                    </div>
                 </div>
-                <dl class="dl" style="margin:0">
-                    <dt>Phone</dt><dd>{{ $c->phone }}</dd>
-                    <dt>Email</dt><dd>{{ $c->email }}</dd>
-                    <dt>Passport</dt><dd class="mono">{{ $c->passport_no }}</dd>
+                <dl class="contact">
+                    <x-icon name="phone" /><dt>Phone</dt><dd>{{ $c->phone }}</dd>
+                    <x-icon name="envelope" /><dt>Email</dt><dd>{{ $c->email }}</dd>
+                    <x-icon name="id-badge" /><dt>Passport</dt><dd>{{ $c->passport_no }}</dd>
                 </dl>
             </div>
         </section>
 
         <section class="panel">
-            <div class="panel-head">Fare</div>
-            <div class="panel-body">
-                <div class="sum-rows">
-                    <div class="sum-row"><span>Base fare</span><span class="mono">{{ number_format($booking->base_fare) }}</span></div>
-                    <div class="sum-row"><span>Taxes &amp; charges</span><span class="mono">{{ number_format($booking->taxes) }}</span></div>
-                    @if ($booking->fuel_surcharge > 0)<div class="sum-row"><span>Fuel surcharge</span><span class="mono">{{ number_format($booking->fuel_surcharge) }}</span></div>@endif
-                    @if ($booking->discount > 0)<div class="sum-row"><span>Discount</span><span class="mono">− {{ number_format($booking->discount) }}</span></div>@endif
-                    <div class="sum-row sum-total"><span>Total</span><span class="mono">{{ $booking->currency }} {{ number_format($booking->total) }}</span></div>
-                    @if ($inv)
-                        <div class="sum-row"><span>Payment</span><x-pay :value="$inv->payment_status" /></div>
-                        <div class="sum-row"><span>Method</span><span>{{ $inv->payment_method }}</span></div>
-                        <div class="sum-row"><span>Invoice</span><span class="mono">{{ $inv->invoice_no }}</span></div>
-                        <div class="sum-row"><span>Issued</span><span>{{ optional($inv->issued_on)->format('d M Y') }}</span></div>
-                    @endif
-                </div>
+            <div class="panel-head"><x-icon name="coins" />Fare</div>
+            <div class="fare-body">
+                <div class="fr"><span>Base fare</span><span class="v">{{ number_format($booking->base_fare) }}</span></div>
+                <div class="fr"><span>Taxes &amp; charges</span><span class="v">{{ number_format($booking->taxes) }}</span></div>
+                @if ($booking->fuel_surcharge > 0)<div class="fr"><span>Fuel surcharge</span><span class="v">{{ number_format($booking->fuel_surcharge) }}</span></div>@endif
+                @if ($booking->discount > 0)<div class="fr"><span>Discount</span><span class="v">− {{ number_format($booking->discount) }}</span></div>@endif
+                <div class="fr fr-total"><span>Total</span><span class="v">{{ $booking->currency }}&nbsp; {{ number_format($booking->total) }}</span></div>
+                @if ($inv)
+                    <div class="fr-sep"></div>
+                    <div class="fr fr-pay"><x-icon name="credit-card" /><span>Payment</span><span class="v"><x-pay :value="$inv->payment_status" /></span></div>
+                    <div class="fr"><span>Method</span><span class="v">{{ $inv->payment_method }}</span></div>
+                    <div class="fr"><span>Issued</span><span class="v">{{ optional($inv->issued_on)->format('d M Y') }}</span></div>
+                @endif
             </div>
         </section>
     </div>

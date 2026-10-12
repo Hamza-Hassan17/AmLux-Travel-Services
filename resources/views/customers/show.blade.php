@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', $customer->name)
 @section('content')
-<div class="crumbs"><a href="{{ route('customers.index') }}">Directory</a> &nbsp;/&nbsp; <a href="{{ route('customers.index') }}">Customers</a> &nbsp;/&nbsp; {{ $customer->name }}</div>
+<div class="crumbs"><a href="{{ route('customers.index') }}">Directory</a><span class="sep"></span><a href="{{ route('customers.index') }}">Customers</a><span class="sep"></span>{{ $customer->name }}</div>
 
 <div class="detail-head">
     <div class="person">
@@ -18,7 +18,7 @@
 
 <div class="detail-grid">
     <section class="panel panel-clip">
-        <div class="panel-head">Flight bookings</div>
+        <div class="panel-head"><x-icon name="plane" />Flight bookings</div>
         <div class="table-wrap">
             <table class="data narrow">
                 <thead><tr><th>PNR</th><th>Route</th><th>Departure</th><th class="right">Total</th><th>Status</th></tr></thead>
@@ -40,7 +40,7 @@
     </section>
 
     <section class="panel">
-        <div class="panel-head">Contact &amp; travel document</div>
+        <div class="panel-head"><x-icon name="id-card" />Contact &amp; travel document</div>
         <div class="panel-body">
             <dl class="dl" style="margin:0">
                 <dt>Phone</dt><dd>{{ $customer->phone }}</dd>

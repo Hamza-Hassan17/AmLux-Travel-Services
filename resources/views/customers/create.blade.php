@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-head">
     <div>
-        <div class="crumbs"><a href="{{ route('customers.index') }}">Directory</a> &nbsp;/&nbsp; <a href="{{ route('customers.index') }}">Customers</a> &nbsp;/&nbsp; New</div>
+        <div class="crumbs"><a href="{{ route('customers.index') }}">Directory</a><span class="sep"></span><a href="{{ route('customers.index') }}">Customers</a><span class="sep"></span>New</div>
         <h1>Add customer</h1>
     </div>
 </div>
@@ -11,7 +11,7 @@
 <form method="POST" action="{{ route('customers.store') }}">
     @csrf
     <section class="panel" style="max-width:860px">
-        <div class="panel-head">Customer entry</div>
+        <div class="panel-head"><x-icon name="user" />Customer entry</div>
         <div class="panel-body grid">
             <div class="field c6"><label for="name">Full name <span class="req">*</span></label><input id="name" name="name" class="input" value="{{ old('name') }}" required></div>
             <div class="field c6"><label for="phone">Phone <span class="req">*</span></label><input id="phone" name="phone" class="input" value="{{ old('phone') }}" placeholder="+92 300 1234567" required></div>

@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-head">
     <div>
-        <div class="crumbs">Directory &nbsp;/&nbsp; Customers</div>
+        <div class="crumbs">Directory<span class="sep"></span><b>Customers</b></div>
         <h1>Customers</h1>
     </div>
     <div class="actions">
