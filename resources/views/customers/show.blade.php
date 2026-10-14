@@ -12,6 +12,7 @@
         </div>
     </div>
     <div class="actions">
+        <a class="btn btn-ghost" href="{{ route('hotels.create', ['customer_id' => $customer->id]) }}">+ Book hotel</a>
         <a class="btn btn-red" href="{{ route('flights.create', ['customer_id' => $customer->id]) }}">+ Book flight</a>
     </div>
 </div>
@@ -38,6 +39,29 @@
             </table>
         </div>
     </section>
+
+    <section class="panel panel-clip" style="margin-top:20px">
+        <div class="panel-head"><x-icon name="hotel" />Hotel bookings</div>
+        <div class="table-wrap">
+            <table class="data narrow">
+                <thead><tr><th>Reference</th><th>Hotel</th><th>Stay</th><th class="right">Total</th><th>Status</th></tr></thead>
+                <tbody>
+                @forelse ($customer->hotelBookings->sortByDesc('check_in') as $h)
+                    <tr class="row" data-href="{{ route('hotels.show', $h) }}">
+                        <td><a class="pnr" href="{{ route('hotels.show', $h) }}">{{ $h->booking_ref }}</a></td>
+                        <td><div class="strong">{{ $h->hotel_name }}</div><div class="sub">{{ $h->city }}</div></td>
+                        <td>{{ $h->check_in->format('d M') }} → {{ $h->check_out->format('d M Y') }}<div class="sub">{{ $h->nights }} {{ \Illuminate\Support\Str::plural('night', $h->nights) }}</div></td>
+                        <td class="right strong nowrap"><span class="muted">{{ $h->currency }}</span> {{ number_format($h->total) }}</td>
+                        <td><x-status :value="$h->status" /></td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="empty">No hotel bookings yet.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 
     <section class="panel">
         <div class="panel-head"><x-icon name="id-card" />Contact &amp; travel document</div>

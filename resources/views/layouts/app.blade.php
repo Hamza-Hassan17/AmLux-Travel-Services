@@ -19,6 +19,7 @@
         <div class="nav-label">Workspace</div>
         <nav class="nav">
             <a class="nav-item {{ request()->routeIs('flights.*') ? 'active' : '' }}" href="{{ route('flights.index') }}"><x-icon name="plane" />Flight Bookings<span class="badge">{{ $navFlights }}</span></a>
+            <a class="nav-item {{ request()->routeIs('hotels.*') ? 'active' : '' }}" href="{{ route('hotels.index') }}"><x-icon name="hotel" />Hotel Bookings<span class="badge">{{ $navHotels }}</span></a>
             <a class="nav-item {{ request()->routeIs('customers.*') ? 'active' : '' }}" href="{{ route('customers.index') }}"><x-icon name="users" />Customers<span class="badge">{{ $navCustomers }}</span></a>
         </nav>
 

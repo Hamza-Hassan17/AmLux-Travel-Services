@@ -13,6 +13,11 @@ class Customer extends Model
         return $this->hasMany(FlightBooking::class);
     }
 
+    public function hotelBookings()
+    {
+        return $this->hasMany(HotelBooking::class);
+    }
+
     public function getInitialsAttribute()
     {
         return collect(preg_split('/\s+/', trim($this->name)))

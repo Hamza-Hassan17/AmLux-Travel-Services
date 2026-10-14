@@ -206,7 +206,7 @@ table.data tbody tr.row:hover { background: #F3F8FF; }
 .stack { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
 .c2 { grid-column: span 2; } .c3 { grid-column: span 3; } .c4 { grid-column: span 4; }
-.c5 { grid-column: span 5; } .c6 { grid-column: span 6; } .c12 { grid-column: span 12; }
+.c5 { grid-column: span 5; } .c8 { grid-column: span 8; } .c6 { grid-column: span 6; } .c12 { grid-column: span 12; }
 .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .field label { font-size: 13px; color: var(--label); font-weight: 500; }
 .field .hint { font-size: 13px; color: var(--muted); }
@@ -270,7 +270,7 @@ table.data tbody tr.row:hover { background: #F3F8FF; }
 .itin { margin-top: 30px; }
 .itin .panel-head { height: 42px; }
 .itin-grid { display: grid; grid-template-columns: 433fr 479fr; padding: 10px 20px 10px 20px; column-gap: 0; }
-.it { display: flex; align-items: center; gap: 16px; height: 57px; min-width: 0; }
+.it { display: flex; align-items: center; gap: 16px; min-height: 57px; padding: 3px 12px 3px 0; min-width: 0; }
 .it-ic { width: 44px; height: 44px; border-radius: 50%; background: var(--chip); color: var(--navy); display: grid; place-items: center; font-size: 18px; flex: none; }
 .it-t { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .it-t .l { font-size: 12px; letter-spacing: .03em; text-transform: uppercase; color: var(--label); line-height: 1.1; }
@@ -297,6 +297,14 @@ table.data tbody tr.row:hover { background: #F3F8FF; }
 .fr-pay + .fr { margin-top: 4px; }
 .fr-pay .ic { font-size: 18px; color: var(--navy); }
 .fr-pay .v { margin-left: auto; font-weight: 700; }
+
+/* ---------- hotel ---------- */
+.hotel-tile { background: linear-gradient(135deg, #0B3B8C, #1B5FC8); font-size: 26px; }
+.hotel-tile .ic { width: 28px; height: 28px; }
+.stars { color: #E7A400; letter-spacing: 1px; }
+.amenities { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 20px 20px; }
+.amenities span { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink); background: #F1F7FF; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; }
+.amenities .ic { color: var(--green); font-size: 13px; }
 
 /* ---------- misc ---------- */
 .dl { display: grid; grid-template-columns: 140px minmax(0, 1fr); row-gap: 12px; column-gap: 12px; font-size: 15px; }

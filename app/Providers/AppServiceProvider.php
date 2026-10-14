@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Customer;
 use App\Models\FlightBooking;
+use App\Models\HotelBooking;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.app', function ($view) {
             $view->with([
                 'navFlights' => FlightBooking::count(),
+                'navHotels' => HotelBooking::count(),
                 'navCustomers' => Customer::count(),
             ]);
         });
