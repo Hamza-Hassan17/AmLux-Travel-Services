@@ -25,9 +25,8 @@
 
         <div class="nav-sep"></div>
         <nav class="nav nav-bottom">
-            <span class="nav-item" title="Coming soon"><x-icon name="chart-line" />Reports</span>
-            <span class="nav-item" title="Coming soon"><x-icon name="gear" />Settings</span>
-            <span class="nav-item" title="Coming soon"><x-icon name="circle-question" />Support</span>
+            <a class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.index') }}"><x-icon name="chart-line" />Reports</a>
+            <a class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}"><x-icon name="gear" />Settings</a>
         </nav>
 
         <div class="side-foot">
@@ -46,7 +45,14 @@
             </form>
             <div class="hero-tools">
                 <span class="bell" title="Notifications"><x-icon name="bell" /></span>
-                <span class="avatar-btn" title="Account"><x-icon name="user" /></span>
+                <details class="usermenu" id="usermenu">
+                    <summary class="avatar-btn" title="{{ auth()->user()->name }}">{{ auth()->user()->initials }}</summary>
+                    <div class="um-pop">
+                        <div class="um-head"><b>{{ auth()->user()->name }}</b><span>{{ auth()->user()->email }}</span></div>
+                        <a href="{{ route('settings.index') }}"><x-icon name="gear" />Settings</a>
+                        <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><x-icon name="right-from-bracket" />Sign out</button></form>
+                    </div>
+                </details>
                 <span class="today"><x-icon name="calendar-days" />{{ now()->format('D, d M Y') }}</span>
             </div>
             <div class="hero-tag"><b>More Than Just Tickets</b><span>We create journeys</span></div>
@@ -67,6 +73,10 @@
     (function () {
         var s = document.getElementById('global-search'), k = document.getElementById('kbd-hint');
         if (/Mac|iPhone|iPad/.test(navigator.platform)) k.firstChild.textContent = '⌘';
+        document.addEventListener('click', function (e) {
+            var m = document.getElementById('usermenu');
+            if (m && !m.contains(e.target)) m.removeAttribute('open');
+        });
         document.addEventListener('keydown', function (e) {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); s.focus(); s.select(); }
         });

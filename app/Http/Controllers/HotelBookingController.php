@@ -101,7 +101,7 @@ class HotelBookingController extends Controller
     {
         return view('hotels.form', [
             'booking' => new HotelBooking([
-                'customer_id' => $request->customer_id, 'currency' => 'PKR', 'star_rating' => 5, 'rooms' => 1, 'adults' => 2,
+                'customer_id' => $request->customer_id, 'currency' => \App\Support\Settings::get('default_currency', 'PKR'), 'star_rating' => 5, 'rooms' => 1, 'adults' => 2,
                 'children' => 0, 'check_in_time' => '15:00', 'check_out_time' => '12:00', 'status' => 'confirmed',
             ]),
             'customers' => Customer::orderBy('name')->get(),

@@ -25,6 +25,7 @@
 </style>
 </head>
 <body>
+@php $agency = \App\Support\Settings::all(); @endphp
 @php
     $c = $booking->customer;
     $inv = $booking->invoice;
@@ -36,8 +37,8 @@
 
 {{-- ============ INVOICE (page 1) ============ --}}
 <table><tr>
-    <td><div class="navy" style="font-size:20px;font-weight:bold;">AmLux Travel Services</div><i>Indulge in luxury experiences</i></td>
-    <td class="r"><div class="navy" style="font-weight:bold;">YOUR JOURNEY</div><i class="red">Our Priority • Indulge in luxury experiences</i></td>
+    <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $agency['name'] }}</div><i>{{ $agency['tagline'] }}</i></td>
+    <td class="r"><div class="navy" style="font-weight:bold;">YOUR JOURNEY</div><i class="red">Our Priority • {{ $agency['tagline'] }}</i></td>
 </tr></table>
 <div style="height:10px;"></div>
 <div class="title">HOTEL BOOKING INVOICE <span class="badge" style="background:{{ $paid ? '#1fa550' : '#e31e2d' }};">{{ $paid ? 'PAYMENT CONFIRMED & PAID' : 'PAYMENT PENDING' }}</span></div>
@@ -61,11 +62,11 @@
 </td>
 <td width="50%" valign="top" style="padding-left:6px;">
     <table class="box"><tr><th colspan="2">2.1 Travel Agency Details</th></tr>
-        <tr><td>Agency Name</td><td class="r"><b>AmLux Travel Services</b></td></tr>
-        <tr><td>Head Office</td><td class="r"><b>Suite 402, Luxury Plaza, Karachi</b></td></tr>
-        <tr><td>Direct Helpline</td><td class="r"><b>+92 21 111 2589</b></td></tr>
-        <tr><td>Official Email</td><td class="r"><b>info@amluxtravels.com</b></td></tr>
-        <tr><td>Web Portal</td><td class="r"><b>www.amluxtravels.com</b></td></tr>
+        <tr><td>Agency Name</td><td class="r"><b>{{ $agency['name'] }}</b></td></tr>
+        <tr><td>Head Office</td><td class="r"><b>{{ $agency['head_office'] }}</b></td></tr>
+        <tr><td>Direct Helpline</td><td class="r"><b>{{ $agency['helpline'] }}</b></td></tr>
+        <tr><td>Official Email</td><td class="r"><b>{{ $agency['email'] }}</b></td></tr>
+        <tr><td>Web Portal</td><td class="r"><b>{{ $agency['website'] }}</b></td></tr>
     </table>
 </td></tr></table>
 
@@ -125,15 +126,15 @@
 
 <table class="box" style="margin-top:12px;"><tr>
     <td width="15%" align="center"><img src="data:image/svg+xml;base64,{{ base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(80)->generate($booking->booking_ref . '|' . $inv->invoice_no)) }}" width="80" height="80"></td>
-    <td valign="middle"><b class="navy">Official Hotel Reservation Verification • AmLux Travel Services</b><br>Scan using your smartphone camera to access instant hotel voucher confirmation, front-desk concierge record and direct reservation details.</td>
+    <td valign="middle"><b class="navy">Official Hotel Reservation Verification • {{ $agency['name'] }}</b><br>Scan using your smartphone camera to access instant hotel voucher confirmation, front-desk concierge record and direct reservation details.</td>
 </tr></table>
 
-<div class="footer">+92 21 111 2589 &nbsp;|&nbsp; +92 300 1234567 &nbsp;|&nbsp; info@amluxtravels.com &nbsp;|&nbsp; www.amluxtravels.com &nbsp;|&nbsp; Travel Beyond Limits</div>
+<div class="footer">{{ $agency['helpline'] }} &nbsp;|&nbsp; {{ $agency['mobile'] }} &nbsp;|&nbsp; {{ $agency['email'] }} &nbsp;|&nbsp; {{ $agency['website'] }} &nbsp;|&nbsp; Travel Beyond Limits</div>
 
 {{-- ============ VOUCHER (page 2) ============ --}}
 <div class="pb"></div>
 <table><tr>
-    <td><div class="navy" style="font-size:20px;font-weight:bold;">AmLux Travel Services</div><i>Hotel Check-in Voucher</i></td>
+    <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $agency['name'] }}</div><i>Hotel Check-in Voucher</i></td>
     <td class="r"><div class="navy" style="font-weight:bold;">YOUR JOURNEY</div><i class="red">Our Priority • Official Hotel Check-in Voucher</i></td>
 </tr></table>
 <div style="height:10px;"></div>
@@ -186,8 +187,8 @@
     <table class="box"><tr><th colspan="2">2 24/7 Concierge &amp; Hotel Direct Support</th></tr>
         <tr><td>Hotel Direct Line</td><td class="r"><b>{{ $booking->hotel_phone ?: '-' }}</b></td></tr>
         <tr><td>Hotel Email</td><td class="r"><b>{{ $booking->hotel_email ?: '-' }}</b></td></tr>
-        <tr><td>AmLux Concierge</td><td class="r"><b>+92 21 111 2589</b></td></tr>
-        <tr><td>Emergency Helpline</td><td class="r"><b>+92 300 1234567</b></td></tr>
+        <tr><td>AmLux Concierge</td><td class="r"><b>{{ $agency['helpline'] }}</b></td></tr>
+        <tr><td>Emergency Helpline</td><td class="r"><b>{{ $agency['mobile'] }}</b></td></tr>
     </table>
 </td></tr></table>
 
@@ -199,9 +200,9 @@
 
 <table class="box" style="margin-top:12px;"><tr>
     <td width="15%" align="center"><img src="data:image/svg+xml;base64,{{ base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(80)->generate(($booking->confirmation_no ?: $booking->booking_ref) . '|' . $booking->voucher_no)) }}" width="80" height="80"></td>
-    <td valign="middle"><b class="navy">Digital Voucher Verification • Hotel Desk Concierge</b><br>Scan to verify the guaranteed room allocation, guest profile and direct booking confirmation under AmLux Travel Services.</td>
+    <td valign="middle"><b class="navy">Digital Voucher Verification • Hotel Desk Concierge</b><br>Scan to verify the guaranteed room allocation, guest profile and direct booking confirmation under {{ $agency['name'] }}.</td>
 </tr></table>
 
-<div class="footer">+92 21 111 2589 &nbsp;|&nbsp; +92 300 1234567 &nbsp;|&nbsp; reservations@amluxtravels.com &nbsp;|&nbsp; www.amluxtravels.com &nbsp;|&nbsp; AmLux Travel Services</div>
+<div class="footer">{{ $agency['helpline'] }} &nbsp;|&nbsp; {{ $agency['mobile'] }} &nbsp;|&nbsp; {{ $agency['reservations_email'] }} &nbsp;|&nbsp; {{ $agency['website'] }} &nbsp;|&nbsp; {{ $agency['name'] }}</div>
 </body>
 </html>

@@ -22,10 +22,11 @@
 </style>
 </head>
 <body>
+@php $agency = \App\Support\Settings::all(); @endphp
 @php $c = $booking->customer; $inv = $booking->invoice; @endphp
 
 <table><tr>
-    <td><div class="navy" style="font-size:20px;font-weight:bold;">AmLux Travel Services</div><i>Indulge in luxury experiences</i></td>
+    <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $agency['name'] }}</div><i>{{ $agency['tagline'] }}</i></td>
     <td class="r"><div class="navy" style="font-weight:bold;">YOUR JOURNEY</div><i class="red">Our Priority • Travel Beyond Limits</i></td>
 </tr></table>
 <div style="height:10px;"></div>
@@ -50,11 +51,11 @@
 </td>
 <td width="50%" valign="top" style="padding-left:6px;">
     <table class="box"><tr><th colspan="2">2 Service Agency Details</th></tr>
-        <tr><td>Agency Name</td><td class="r"><b>AmLux Travel Services</b></td></tr>
-        <tr><td>Office Address</td><td class="r"><b>Suite 402, Luxury Plaza, Karachi</b></td></tr>
-        <tr><td>Direct Helpline</td><td class="r"><b>+92 21 111 2589</b></td></tr>
-        <tr><td>Email</td><td class="r"><b>info@amluxtravels.com</b></td></tr>
-        <tr><td>Web Portal</td><td class="r"><b>www.amluxtravels.com</b></td></tr>
+        <tr><td>Agency Name</td><td class="r"><b>{{ $agency['name'] }}</b></td></tr>
+        <tr><td>Office Address</td><td class="r"><b>{{ $agency['head_office'] }}</b></td></tr>
+        <tr><td>Direct Helpline</td><td class="r"><b>{{ $agency['helpline'] }}</b></td></tr>
+        <tr><td>Email</td><td class="r"><b>{{ $agency['email'] }}</b></td></tr>
+        <tr><td>Web Portal</td><td class="r"><b>{{ $agency['website'] }}</b></td></tr>
     </table>
 </td></tr></table>
 
@@ -93,12 +94,12 @@
     <tr><td class="total"><b>TOTAL PAID</b></td><td class="r total red">{{ $booking->currency }} {{ number_format($booking->total) }}</td></tr>
 </table></td></tr></table>
 
-<div class="footer">+92 21 111 2589 &nbsp;|&nbsp; +92 300 1234567 &nbsp;|&nbsp; info@amluxtravels.com &nbsp;|&nbsp; www.amluxtravels.com &nbsp;|&nbsp; Travel Beyond Limits</div>
+<div class="footer">{{ $agency['helpline'] }} &nbsp;|&nbsp; {{ $agency['mobile'] }} &nbsp;|&nbsp; {{ $agency['email'] }} &nbsp;|&nbsp; {{ $agency['website'] }} &nbsp;|&nbsp; Travel Beyond Limits</div>
 
 {{-- ============ E-TICKET (page 2) ============ --}}
 <div class="pb"></div>
 <table><tr>
-    <td><div class="navy" style="font-size:20px;font-weight:bold;">AmLux Travel Services</div><i>Electronic Ticket Passenger Receipt</i></td>
+    <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $agency['name'] }}</div><i>Electronic Ticket Passenger Receipt</i></td>
     <td class="r"><div class="navy" style="font-weight:bold;">YOUR JOURNEY</div><i class="red">Our Priority • Validated Travel Document</i></td>
 </tr></table>
 <div style="height:10px;"></div>
@@ -134,6 +135,6 @@
     <td width="33%" valign="top"><b class="navy">TRAVEL DOCUMENTS</b><br>Present this e-ticket, a valid passport and any required entry permit at immigration control.</td>
 </tr></table>
 
-<div class="footer">+92 21 111 2589 &nbsp;|&nbsp; reservations@amluxtravels.com &nbsp;|&nbsp; www.amluxtravels.com &nbsp;|&nbsp; AmLux Travel Services</div>
+<div class="footer">{{ $agency['helpline'] }} &nbsp;|&nbsp; {{ $agency['reservations_email'] }} &nbsp;|&nbsp; {{ $agency['website'] }} &nbsp;|&nbsp; {{ $agency['name'] }}</div>
 </body>
 </html>

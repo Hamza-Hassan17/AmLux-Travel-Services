@@ -92,7 +92,7 @@ class FlightBookingController extends Controller
     public function create(Request $request)
     {
         return view('flights.form', [
-            'booking' => new FlightBooking(['customer_id' => $request->customer_id, 'currency' => 'PKR', 'cabin_class' => 'Economy', 'adults' => 1, 'status' => 'confirmed']),
+            'booking' => new FlightBooking(['customer_id' => $request->customer_id, 'currency' => \App\Support\Settings::get('default_currency', 'PKR'), 'cabin_class' => 'Economy', 'adults' => 1, 'status' => 'confirmed']),
             'customers' => Customer::orderBy('name')->get(),
         ]);
     }
