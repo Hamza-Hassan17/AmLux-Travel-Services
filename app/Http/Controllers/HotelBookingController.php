@@ -99,101 +99,24 @@ class HotelBookingController extends Controller
 
     public function create(Request $request)
     {
-        return view('hotels.form', [
-            'booking' => new HotelBooking([
-                'customer_id' => $request->customer_id, 'currency' => \App\Support\Settings::get('default_currency', 'PKR'), 'star_rating' => 5, 'rooms' => 1, 'adults' => 2,
-                'children' => 0, 'check_in_time' => '15:00', 'check_out_time' => '12:00', 'status' => 'confirmed',
-            ]),
-            'customers' => Customer::orderBy('name')->get(),
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $data = $this->validated($request);
-
-        $booking = DB::transaction(function () use ($data, $request) {
-            if (empty($data['booking_ref'])) {
-                $data['booking_ref'] = $this->makeRef($data['city']);
-            }
-            $booking = HotelBooking::create($data);
-            $booking->update(['voucher_no' => 'VCH-' . date('Y') . '-' . str_pad($booking->id, 3, '0', STR_PAD_LEFT)]);
-
-            $booking->invoice()->create([
-                'invoice_no' => 'INV-HT-' . date('Y') . '-' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
-                'customer_id' => $booking->customer_id,
-                'total' => $booking->total,
-                'currency' => $booking->currency,
-                'payment_status' => $request->input('payment_status', 'paid'),
-                'payment_method' => $request->input('payment_method', 'Online / Paid (100%)'),
-                'issued_on' => $request->input('issued_on', now()->toDateString()),
-            ]);
-
-            return $booking;
-        });
-
-        return redirect()->route('hotels.show', $booking)->with('success', 'Hotel Booked Successfully');
+        return redirect()->route('invoices.create', array_filter(['service' => 'hotel', 'customer_id' => $request->query('customer_id')]));
     }
 
     public function show(HotelBooking $booking)
     {
-        return view('hotels.show', ['booking' => $booking->load('customer', 'invoice')]);
+        return view('hotels.show', ['booking' => $booking->load('customer', 'invoice', 'line')]);
     }
 
     public function edit(HotelBooking $booking)
     {
-        return view('hotels.form', [
-            'booking' => $booking->load('invoice'),
-            'customers' => Customer::orderBy('name')->get(),
-        ]);
+        return view('hotels.form', ['booking' => $booking->load('customer', 'invoice')]);
     }
 
+    /** Stay details only; prices are edited on the invoice. */
     public function update(Request $request, HotelBooking $booking)
     {
-        $data = $this->validated($request, $booking);
-        if (empty($data['booking_ref'])) {
-            $data['booking_ref'] = $booking->booking_ref;
-        }
-
-        DB::transaction(function () use ($booking, $data, $request) {
-            $booking->update($data);
-            $booking->invoice()->update([
-                'customer_id' => $booking->customer_id,
-                'total' => $booking->total,
-                'currency' => $booking->currency,
-                'payment_status' => $request->input('payment_status', 'paid'),
-                'payment_method' => $request->input('payment_method'),
-                'issued_on' => $request->input('issued_on', now()->toDateString()),
-            ]);
-        });
-
-        return redirect()->route('hotels.show', $booking)->with('success', 'Booking updated.');
-    }
-
-    public function invoice(HotelBooking $booking)
-    {
-        $booking->load('customer', 'invoice');
-
-        return PDF::loadView('pdf.hotel', ['booking' => $booking])
-            ->download($booking->invoice->invoice_no . '.pdf');
-    }
-
-    private function makeRef($city)
-    {
-        $code = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', Str::ascii($city)), 0, 3)) ?: 'HTL';
-
-        do {
-            $ref = 'HTL-' . $code . '-' . random_int(10000, 99999);
-        } while (HotelBooking::where('booking_ref', $ref)->exists());
-
-        return $ref;
-    }
-
-    private function validated(Request $request, HotelBooking $booking = null): array
-    {
         $data = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'booking_ref' => ['nullable', 'string', 'max:30', Rule::unique('hotel_bookings', 'booking_ref')->ignore($booking)],
+            'booking_ref' => ['required', 'string', 'max:30', Rule::unique('hotel_bookings', 'booking_ref')->ignore($booking)],
             'confirmation_no' => 'nullable|string|max:40',
             'crs_code' => 'nullable|string|max:40',
             'hotel_name' => 'required|string|max:255',
@@ -204,15 +127,7 @@ class HotelBookingController extends Controller
             'hotel_phone' => 'nullable|string|max:40',
             'hotel_email' => 'nullable|email|max:255',
             'check_in' => 'required|date',
-            'check_out' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {
-                try {
-                    if (Carbon::parse($value)->startOfDay()->lessThanOrEqualTo(Carbon::parse($request->input('check_in'))->startOfDay())) {
-                        $fail('The check-out must be after the check-in.');
-                    }
-                } catch (\Throwable $e) {
-                    $fail('The check-out date is not valid.');
-                }
-            }],
+            'check_out' => 'required|date|after:check_in',
             'check_in_time' => ['required', 'regex:/^\d{2}:\d{2}$/'],
             'check_out_time' => ['required', 'regex:/^\d{2}:\d{2}$/'],
             'room_type' => 'required|string|max:255',
@@ -223,24 +138,26 @@ class HotelBookingController extends Controller
             'meal_plan' => 'nullable|string|max:255',
             'special_request' => 'nullable|string|max:255',
             'amenities' => 'nullable|string|max:2000',
-            'rate_per_night' => 'required|numeric|min:0',
-            'taxes' => 'nullable|numeric|min:0',
-            'discount' => 'nullable|numeric|min:0',
-            'currency' => 'required|alpha|size:3',
+            'guest_name' => 'nullable|string|max:255',
+            'guest_mobile' => 'nullable|string|max:30',
             'status' => 'required|in:confirmed,pending,cancelled',
-            'payment_status' => 'nullable|in:paid,unpaid',
-            'payment_method' => 'nullable|string|max:255',
-            'issued_on' => 'nullable|date',
         ]);
-
-        $data['currency'] = strtoupper($data['currency']);
+        $data['booking_ref'] = strtoupper($data['booking_ref']);
         $data['children'] = $data['children'] ?? 0;
-        foreach (['taxes', 'discount'] as $f) {
-            $data[$f] = $data[$f] ?? 0;
-        }
-        $nights = max(1, Carbon::parse($data['check_in'])->startOfDay()->diffInDays(Carbon::parse($data['check_out'])->startOfDay()));
-        $data['total'] = max(0, $data['rate_per_night'] * $nights * $data['rooms'] + $data['taxes'] - $data['discount']);
 
-        return array_diff_key($data, array_flip(['payment_status', 'payment_method', 'issued_on']));
+        $booking->update($data);
+        if ($booking->line) {
+            $booking->line->update(['reference' => $data['booking_ref'], 'passenger' => $data['guest_name'] ?: $booking->customer->name]);
+        }
+
+        return redirect()->route('hotels.show', $booking)->with('success', 'Booking updated.');
+    }
+
+    public function invoice(HotelBooking $booking)
+    {
+        $booking->load('customer', 'invoice');
+
+        return PDF::loadView('pdf.hotel', ['booking' => $booking])
+            ->download(($booking->invoice ? str_replace('/', '-', $booking->invoice->invoice_no) : 'voucher-' . $booking->booking_ref) . '-voucher.pdf');
     }
 }

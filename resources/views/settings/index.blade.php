@@ -25,6 +25,20 @@
                 <div class="field c6"><label for="website">Website</label><input id="website" name="website" class="input" value="{{ old('website', $agency['website']) }}"></div>
                 <div class="field c6"><label for="default_currency">Default currency <span class="req">*</span></label><input id="default_currency" name="default_currency" maxlength="3" class="input upper" value="{{ old('default_currency', $agency['default_currency']) }}" required></div>
             </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><x-icon name="file-invoice" />Invoice, tax &amp; bank</div>
+            <div class="panel-body grid">
+                <div class="field c6"><label for="tax_label">Tax name</label><input id="tax_label" name="tax_label" class="input" value="{{ old('tax_label', $agency['tax_label']) }}" placeholder="GST"></div>
+                <div class="field c6"><label for="tax_rate">Default tax rate %</label><input id="tax_rate" type="number" step="0.01" min="0" max="100" name="tax_rate" class="input" value="{{ old('tax_rate', $agency['tax_rate']) }}"><span class="hint">Pre-filled on new invoice lines. Use 0 for no tax.</span></div>
+                <div class="field c6"><label for="bank_name">Bank name</label><input id="bank_name" name="bank_name" class="input" value="{{ old('bank_name', $agency['bank_name']) }}"></div>
+                <div class="field c6"><label for="bank_account_title">Account title</label><input id="bank_account_title" name="bank_account_title" class="input" value="{{ old('bank_account_title', $agency['bank_account_title']) }}"></div>
+                <div class="field c6"><label for="bank_account_no">Account no.</label><input id="bank_account_no" name="bank_account_no" class="input" value="{{ old('bank_account_no', $agency['bank_account_no']) }}"></div>
+                <div class="field c6"><label for="bank_iban">IBAN</label><input id="bank_iban" name="bank_iban" class="input" value="{{ old('bank_iban', $agency['bank_iban']) }}"></div>
+                <div class="field c12"><label for="signatory">Authorized signatory (printed under the signature line)</label><input id="signatory" name="signatory" class="input" value="{{ old('signatory', $agency['signatory']) }}"></div>
+                <div class="field c12"><label for="invoice_terms">Terms &amp; conditions printed on invoices</label><textarea id="invoice_terms" name="invoice_terms" class="textarea" rows="3">{{ old('invoice_terms', $agency['invoice_terms']) }}</textarea></div>
+            </div>
             <div class="panel-body actions" style="border-top:1px solid var(--line)">
                 <button class="btn btn-red">Save agency details</button>
             </div>

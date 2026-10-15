@@ -20,6 +20,14 @@ class Settings
         'reservations_email' => 'reservations@amluxtravels.com',
         'website' => 'www.amluxtravels.com',
         'default_currency' => 'PKR',
+        'tax_label' => 'GST',
+        'tax_rate' => '0',
+        'bank_name' => '',
+        'bank_account_title' => '',
+        'bank_account_no' => '',
+        'bank_iban' => '',
+        'invoice_terms' => 'Payment is due by the due date shown. Tickets and hotel vouchers are subject to supplier rules; changes and refunds follow the supplier policy and AmLux service charges.',
+        'signatory' => '',
     ];
 
     protected static $cache;

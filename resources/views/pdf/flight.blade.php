@@ -36,7 +36,7 @@
     <td><div class="l">Invoice number</div><b class="navy">{{ $inv->invoice_no }}</b></td>
     <td><div class="l">Booking ref / PNR</div><b class="red">{{ $booking->pnr }}</b></td>
     <td><div class="l">Issue date</div><b class="navy">{{ $inv->issued_on->format('d-m-Y') }}</b></td>
-    <td><div class="l">Payment method</div><b class="navy">{{ $inv->payment_method }}</b></td>
+    <td><div class="l">Payment method</div><b class="navy">{{ $inv->payment_method ?: '-' }}</b></td>
 </tr></table>
 
 <table style="margin-top:12px;"><tr>
@@ -63,8 +63,8 @@
     <tr><th colspan="3">{{ $booking->airline }} &middot; Flight {{ $booking->flight_no }} &middot; {{ $booking->aircraft }} &middot; {{ $booking->cabin_class }}</th></tr>
     <tr style="text-align:center;">
         <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $booking->origin }}</div><small>{{ $booking->origin_airport }}</small><br><span class="red">{{ $booking->departure_at->format('h:i A • d-M-Y') }}</span></td>
-        <td>{{ $booking->duration }}<br>&#9992;</td>
-        <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $booking->destination }}</div><small>{{ $booking->destination_airport }}</small><br><span class="red">{{ $booking->arrival_at->format('h:i A • d-M-Y') }}</span></td>
+        <td>{{ $booking->duration ?: '' }}<br>&#9992;</td>
+        <td><div class="navy" style="font-size:20px;font-weight:bold;">{{ $booking->destination }}</div><small>{{ $booking->destination_airport }}</small><br><span class="red">{{ optional($booking->arrival_at)->format('h:i A • d-M-Y') ?: '-' }}</span></td>
     </tr>
     <tr style="text-align:center;background:#f6f8fc;">
         <td><small>BAGGAGE</small><br><b>{{ $booking->baggage ?: '-' }}</b></td>
@@ -118,7 +118,7 @@
         <td width="70%" valign="top">
             <div class="navy" style="font-size:18px;font-weight:bold;">{{ $booking->origin }} &rarr; {{ $booking->destination }}</div>
             Dept: <b>{{ $booking->departure_at->format('h:i A | d-M-Y') }}</b><br>
-            Arr: <b>{{ $booking->arrival_at->format('h:i A | d-M-Y') }}</b><br><br>
+            Arr: <b>{{ optional($booking->arrival_at)->format('h:i A | d-M-Y') ?: '-' }}</b><br><br>
             Passenger: <b>{{ $c->name }}</b> &nbsp; Passport: <b>{{ $c->passport_no }}</b><br>
             Seat: <b class="red">{{ $booking->seat ?: '-' }}</b> &nbsp; Class: <b>{{ $booking->cabin_class }}</b> &nbsp; Baggage: <b>{{ $booking->baggage ?: '-' }}</b>
         </td>

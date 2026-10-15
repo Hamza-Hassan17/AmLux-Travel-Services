@@ -19,7 +19,7 @@
     </div>
     <div class="actions">
         <a class="btn btn-ghost btn-lg" href="{{ route('hotels.export', $keep) }}"><x-icon name="download" />Export CSV</a>
-        <a class="btn btn-red btn-lg" href="{{ route('hotels.create') }}"><x-icon name="hotel" />New hotel booking</a>
+        <a class="btn btn-red btn-lg" href="{{ route('invoices.create', ['service' => 'hotel']) }}"><x-icon name="hotel" />New hotel invoice</a>
     </div>
 </div>
 
@@ -94,7 +94,7 @@
                     <td><x-status :value="$b->status" /></td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="empty">@if ($active || $filters['status']) No bookings match these filters. @else No hotel bookings yet. <a href="{{ route('hotels.create') }}">Create the first one</a>. @endif</td></tr>
+                <tr><td colspan="9" class="empty">@if ($active || $filters['status']) No bookings match these filters. @else No hotel bookings yet. <a href="{{ route('invoices.create', ['service' => 'hotel']) }}">Create the first one</a>. @endif</td></tr>
             @endforelse
             </tbody>
         </table>

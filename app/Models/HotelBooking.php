@@ -20,7 +20,17 @@ class HotelBooking extends Model
 
     public function invoice()
     {
-        return $this->morphOne(Invoice::class, 'invoiceable');
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function line()
+    {
+        return $this->morphOne(InvoiceLine::class, 'serviceable');
+    }
+
+    public function getGuestAttribute()
+    {
+        return $this->guest_name ?: optional($this->customer)->name;
     }
 
     public function getNightsAttribute()

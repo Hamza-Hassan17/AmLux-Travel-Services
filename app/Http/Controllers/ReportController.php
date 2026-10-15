@@ -2,148 +2,172 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FlightBooking;
-use App\Models\HotelBooking;
+use App\Models\Agent;
+use App\Models\Customer;
 use App\Models\Invoice;
-use App\Support\FlightStats;
+use App\Models\InvoiceLine;
+use App\Models\Refund;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        [$from, $to] = $this->range($request);
-        $currency = 'PKR';
-
-        $invoices = $this->invoices($from, $to, $currency);
-        $live = $invoices->reject(function ($i) {
-            return $this->cancelled($i);
-        });
-        $cancelled = $invoices->count() - $live->count();
-
-        $paid = $live->where('payment_status', 'paid')->sum('total');
-        $unpaid = $live->where('payment_status', '!=', 'paid')->sum('total');
-        $revenue = $live->sum('total');
-
-        $services = [];
-        foreach (['flight' => FlightBooking::class, 'hotel' => HotelBooking::class] as $key => $class) {
-            $set = $live->filter(function ($i) use ($class) {
-                return $i->invoiceable_type === $class;
-            });
-            $services[$key] = [
-                'count' => $set->count(),
-                'revenue' => $set->sum('total'),
-                'paid' => $set->where('payment_status', 'paid')->sum('total'),
-                'unpaid' => $set->where('payment_status', '!=', 'paid')->sum('total'),
-            ];
-        }
-
-        // six-month trend ending with the selected end date
-        $trendStart = $to->copy()->startOfMonth()->subMonths(5);
-        $trendInvoices = $this->invoices($trendStart, $to->copy()->endOfMonth(), $currency)->reject(function ($i) {
-            return $this->cancelled($i);
-        });
-        $months = [];
-        for ($m = $trendStart->copy(); $m->lessThanOrEqualTo($to->copy()->startOfMonth()); $m->addMonth()) {
-            $key = $m->format('Y-m');
-            $set = $trendInvoices->filter(function ($i) use ($key) {
-                return $i->issued_on->format('Y-m') === $key;
-            });
-            $months[] = [
-                'label' => $m->format('M Y'),
-                'flight' => $set->where('invoiceable_type', FlightBooking::class)->sum('total'),
-                'hotel' => $set->where('invoiceable_type', HotelBooking::class)->sum('total'),
-                'total' => $set->sum('total'),
-            ];
-        }
-        $maxMonth = max(1, collect($months)->max('total'));
-
-        $topCustomers = $live->groupBy('customer_id')->map(function ($set) {
-            return ['name' => $set->first()->customer->name, 'id' => $set->first()->customer_id, 'count' => $set->count(), 'total' => $set->sum('total')];
-        })->sortByDesc('total')->take(5)->values();
-
-        $topAirlines = $live->filter(function ($i) {
-            return $i->invoiceable instanceof FlightBooking;
-        })->groupBy(function ($i) {
-            return $i->invoiceable->airline;
-        })->map(function ($set, $name) {
-            return ['name' => $name, 'count' => $set->count(), 'total' => $set->sum('total')];
-        })->sortByDesc('total')->take(5)->values();
-
-        $topHotels = $live->filter(function ($i) {
-            return $i->invoiceable instanceof HotelBooking;
-        })->groupBy(function ($i) {
-            return $i->invoiceable->hotel_name;
-        })->map(function ($set, $name) {
-            return ['name' => $name, 'city' => $set->first()->invoiceable->city, 'count' => $set->count(), 'total' => $set->sum('total')];
-        })->sortByDesc('total')->take(5)->values();
-
-        $outstanding = $live->where('payment_status', '!=', 'paid')->sortBy('issued_on')->take(10)->values();
+        $from = now()->startOfMonth();
+        $to = now()->endOfMonth();
+        $pnl = $this->profitAndLoss($from, $to);
+        $sales = Invoice::whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])->get();
 
         return view('reports.index', [
-            'from' => $from,
-            'to' => $to,
-            'currency' => $currency,
-            'summary' => [
-                'revenue' => $revenue,
-                'paid' => $paid,
-                'unpaid' => $unpaid,
-                'count' => $live->count(),
-                'cancelled' => $cancelled,
-                'average' => $live->count() ? $revenue / $live->count() : 0,
-                'otherCurrency' => Invoice::whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])->where('currency', '!=', $currency)->count(),
+            'from' => $from, 'to' => $to,
+            'salesTotal' => $sales->sum('total'), 'salesCount' => $sales->count(),
+            'netProfit' => $pnl['netProfit'],
+        ]);
+    }
+
+    // ---------------------------------------------------------------- sales
+
+    public function sales(Request $request)
+    {
+        [$from, $to] = $this->range($request);
+        $customerId = $request->query('customer_id');
+
+        $invoices = $this->invoices($from, $to, $customerId);
+        $lines = $invoices->flatMap->lines;
+
+        $byService = [];
+        foreach (['flight' => 'Flights', 'hotel' => 'Hotels'] as $key => $label) {
+            $set = $lines->where('service_type', $key);
+            $byService[$key] = [
+                'label' => $label, 'count' => $set->count(),
+                'net' => $set->sum(function ($l) {
+                    return $l->line_total - $l->tax_amount;
+                }),
+                'tax' => $set->sum('tax_amount'), 'total' => $set->sum('line_total'),
+            ];
+        }
+
+        return view('reports.sales', [
+            'from' => $from, 'to' => $to, 'customerId' => $customerId,
+            'customers' => Customer::orderBy('name')->get(['id', 'name']),
+            'invoices' => $invoices,
+            'byService' => $byService,
+            'totals' => [
+                'net' => $invoices->sum(function ($i) {
+                    return $i->total - $i->tax_total;
+                }),
+                'tax' => $invoices->sum('tax_total'),
+                'total' => $invoices->sum('total'),
+                'received' => $invoices->sum('paid_amount'),
+                'refunded' => $invoices->sum('refunded_amount'),
+                'balance' => $invoices->sum(function ($i) {
+                    return $i->balance;
+                }),
             ],
-            'services' => $services,
-            'months' => $months,
-            'maxMonth' => $maxMonth,
-            'topCustomers' => $topCustomers,
-            'topAirlines' => $topAirlines,
-            'topHotels' => $topHotels,
-            'outstanding' => $outstanding,
             'presets' => $this->presets(),
         ]);
     }
 
-    public function export(Request $request)
+    public function salesExport(Request $request)
     {
         [$from, $to] = $this->range($request);
-        $rows = $this->invoices($from, $to, null);
+        $invoices = $this->invoices($from, $to, $request->query('customer_id'));
 
-        return response()->streamDownload(function () use ($rows) {
+        return response()->streamDownload(function () use ($invoices) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Invoice', 'Date', 'Service', 'Reference', 'Customer', 'Currency', 'Total', 'Payment', 'Method', 'Booking status']);
-            foreach ($rows as $i) {
-                $b = $i->invoiceable;
+            fputcsv($out, ['Date', 'Invoice', 'Customer', 'Services', 'Net sales', 'Tax', 'Total', 'Received', 'Refunded', 'Balance', 'Status']);
+            foreach ($invoices as $i) {
                 fputcsv($out, [
-                    $i->invoice_no, $i->issued_on->format('Y-m-d'),
-                    $b instanceof HotelBooking ? 'Hotel' : 'Flight',
-                    $b instanceof HotelBooking ? $b->booking_ref : optional($b)->pnr,
-                    $i->customer->name, $i->currency, $i->total, $i->payment_status, $i->payment_method, optional($b)->status,
+                    $i->issued_on->format('Y-m-d'), $i->invoice_no, $i->customer->name,
+                    $i->lines->map(function ($l) {
+                        return ucfirst($l->service_type) . ' ' . $l->reference;
+                    })->implode('; '),
+                    $i->total - $i->tax_total, $i->tax_total, $i->total, $i->paid_amount, $i->refunded_amount, $i->balance, $i->payment_status,
                 ]);
             }
             fclose($out);
-        }, 'amlux-report-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.csv', ['Content-Type' => 'text/csv']);
+        }, 'sales-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.csv', ['Content-Type' => 'text/csv']);
     }
 
-    private function invoices(Carbon $from, Carbon $to, $currency)
+    // ------------------------------------------------------- profit & loss
+
+    public function pnl(Request $request)
     {
-        return Invoice::with(['invoiceable', 'customer'])
+        [$from, $to] = $this->range($request);
+
+        return view('reports.pnl', [
+            'from' => $from, 'to' => $to,
+            'p' => $this->profitAndLoss($from, $to),
+            'presets' => $this->presets(),
+        ]);
+    }
+
+    public function pnlExport(Request $request)
+    {
+        [$from, $to] = $this->range($request);
+        $p = $this->profitAndLoss($from, $to);
+
+        return response()->streamDownload(function () use ($p) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Item', 'Amount']);
+            foreach ([
+                ['Sales - Flights', $p['sales']['flight']], ['Sales - Hotels', $p['sales']['hotel']], ['Total sales (excl. tax)', $p['salesTotal']],
+                ['Less: refunds to customers', -$p['customerRefunds']], ['Net sales', $p['netSales']],
+                ['Cost - Flights', $p['cost']['flight']], ['Cost - Hotels', $p['cost']['hotel']], ['Total cost of sales', $p['costTotal']],
+                ['Less: supplier refunds received', -$p['supplierRefunds']], ['Net cost of sales', $p['netCost']],
+                ['Gross profit', $p['grossProfit']], ['Less: agent commissions', -$p['commissions']], ['Net profit', $p['netProfit']],
+            ] as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, 'profit-and-loss-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    private function profitAndLoss(Carbon $from, Carbon $to)
+    {
+        $invoices = $this->invoices($from, $to, null);
+        $lines = $invoices->flatMap->lines;
+
+        $sales = $cost = [];
+        foreach (['flight', 'hotel'] as $svc) {
+            $set = $lines->where('service_type', $svc);
+            $sales[$svc] = round($set->sum(function ($l) {
+                return $l->line_total - $l->tax_amount;
+            }), 2);
+            $cost[$svc] = round($set->sum('buying_price'), 2);
+        }
+
+        $refunds = Refund::whereBetween('refunded_on', [$from->toDateString(), $to->toDateString()])->get();
+        $customerRefunds = round($refunds->sum('customer_refund'), 2);
+        $supplierRefunds = round($refunds->sum('supplier_refund'), 2);
+        $commissions = round($invoices->sum('agent_commission'), 2);
+
+        $salesTotal = array_sum($sales);
+        $costTotal = array_sum($cost);
+        $netSales = $salesTotal - $customerRefunds;
+        $netCost = $costTotal - $supplierRefunds;
+        $gross = $netSales - $netCost;
+
+        return [
+            'sales' => $sales, 'salesTotal' => $salesTotal, 'customerRefunds' => $customerRefunds, 'netSales' => $netSales,
+            'cost' => $cost, 'costTotal' => $costTotal, 'supplierRefunds' => $supplierRefunds, 'netCost' => $netCost,
+            'grossProfit' => $gross, 'commissions' => $commissions, 'netProfit' => $gross - $commissions,
+            'margin' => $netSales > 0 ? round(($gross - $commissions) / $netSales * 100, 1) : 0,
+            'tax' => round($invoices->sum('tax_total'), 2), 'invoiceCount' => $invoices->count(),
+        ];
+    }
+
+    // -------------------------------------------------------------- shared
+
+    private function invoices(Carbon $from, Carbon $to, $customerId)
+    {
+        return Invoice::with(['customer', 'lines'])
             ->whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])
-            ->when($currency, function ($q) use ($currency) {
-                $q->where('currency', $currency);
+            ->when($customerId, function ($q) use ($customerId) {
+                $q->where('customer_id', $customerId);
             })
-            ->orderBy('issued_on')
-            ->get()
-            ->filter(function ($i) {
-                return $i->invoiceable !== null;
-            })
-            ->values();
-    }
-
-    private function cancelled(Invoice $i)
-    {
-        return optional($i->invoiceable)->status === 'cancelled';
+            ->orderBy('issued_on')->orderBy('id')->get();
     }
 
     private function range(Request $request)
@@ -167,9 +191,9 @@ class ReportController extends Controller
         $now = now();
 
         return [
+            'Today' => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
             'This month' => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
             'Last month' => [$now->copy()->subMonthNoOverflow()->startOfMonth(), $now->copy()->subMonthNoOverflow()->endOfMonth()],
-            'Last 30 days' => [$now->copy()->subDays(29), $now->copy()],
             'This year' => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
         ];
     }

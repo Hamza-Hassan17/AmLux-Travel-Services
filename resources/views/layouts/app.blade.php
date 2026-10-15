@@ -16,11 +16,26 @@
             <a class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}"><x-icon name="house" />Dashboard</a>
         </nav>
 
-        <div class="nav-label">Workspace</div>
+        <div class="nav-label">Transactions</div>
         <nav class="nav">
-            <a class="nav-item {{ request()->routeIs('flights.*') ? 'active' : '' }}" href="{{ route('flights.index') }}"><x-icon name="plane" />Flight Bookings<span class="badge">{{ $navFlights }}</span></a>
-            <a class="nav-item {{ request()->routeIs('hotels.*') ? 'active' : '' }}" href="{{ route('hotels.index') }}"><x-icon name="hotel" />Hotel Bookings<span class="badge">{{ $navHotels }}</span></a>
+            <a class="nav-item {{ request()->routeIs('invoices.*') ? 'active' : '' }}" href="{{ route('invoices.index') }}"><x-icon name="file-invoice" />Invoices<span class="badge">{{ $navInvoices }}</span></a>
+            <a class="nav-item {{ request()->routeIs('receipts.*') ? 'active' : '' }}" href="{{ route('receipts.index') }}"><x-icon name="receipt" />Receipts</a>
+            <a class="nav-item {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}"><x-icon name="wallet" />Payments</a>
+            <a class="nav-item {{ request()->routeIs('refunds.*') ? 'active' : '' }}" href="{{ route('refunds.index') }}"><x-icon name="rotate-left" />Refunds</a>
+        </nav>
+
+        <div class="nav-label">Bookings</div>
+        <nav class="nav">
+            <a class="nav-item {{ request()->routeIs('flights.*') ? 'active' : '' }}" href="{{ route('flights.index') }}"><x-icon name="plane" />Flights<span class="badge">{{ $navFlights }}</span></a>
+            <a class="nav-item {{ request()->routeIs('hotels.*') ? 'active' : '' }}" href="{{ route('hotels.index') }}"><x-icon name="hotel" />Hotels<span class="badge">{{ $navHotels }}</span></a>
+        </nav>
+
+        <div class="nav-label">Directory</div>
+        <nav class="nav">
             <a class="nav-item {{ request()->routeIs('customers.*') ? 'active' : '' }}" href="{{ route('customers.index') }}"><x-icon name="users" />Customers<span class="badge">{{ $navCustomers }}</span></a>
+            <a class="nav-item {{ request()->routeIs('suppliers.*') ? 'active' : '' }}" href="{{ route('suppliers.index') }}"><x-icon name="building" />Suppliers</a>
+            <a class="nav-item {{ request()->routeIs('agents.*') ? 'active' : '' }}" href="{{ route('agents.index') }}"><x-icon name="user-group" />Commission agents</a>
+            <a class="nav-item {{ request()->routeIs('accounts.*') ? 'active' : '' }}" href="{{ route('accounts.index') }}"><x-icon name="building-columns" />Cash &amp; bank</a>
         </nav>
 
         <div class="nav-sep"></div>

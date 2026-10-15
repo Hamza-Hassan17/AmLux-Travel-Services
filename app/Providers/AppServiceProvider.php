@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Customer;
 use App\Models\FlightBooking;
 use App\Models\HotelBooking;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -32,7 +33,8 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'navFlights' => FlightBooking::count(),
                 'navHotels' => HotelBooking::count(),
-                'navCustomers' => Customer::count(),
+                'navInvoices' => Invoice::count(),
+                'navCustomers' => Customer::where('type', 'customer')->count(),
             ]);
         });
 

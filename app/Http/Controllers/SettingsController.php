@@ -26,6 +26,14 @@ class SettingsController extends Controller
             'reservations_email' => 'nullable|email|max:255',
             'website' => 'nullable|string|max:255',
             'default_currency' => 'required|alpha|size:3',
+            'tax_label' => 'nullable|string|max:20',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'bank_name' => 'nullable|string|max:120',
+            'bank_account_title' => 'nullable|string|max:160',
+            'bank_account_no' => 'nullable|string|max:60',
+            'bank_iban' => 'nullable|string|max:60',
+            'invoice_terms' => 'nullable|string|max:1500',
+            'signatory' => 'nullable|string|max:120',
         ]);
         $data['default_currency'] = strtoupper($data['default_currency']);
 
