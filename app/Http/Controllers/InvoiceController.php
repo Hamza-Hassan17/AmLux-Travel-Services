@@ -168,7 +168,7 @@ class InvoiceController extends Controller
             'customers' => Customer::where('type', 'customer')->orderBy('name')->get(['id', 'name', 'phone', 'passport_no']),
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'agents' => Agent::orderBy('name')->get(['id', 'name']),
-            'accounts' => Account::where('is_active', true)->orderBy('id')->get(['id', 'name', 'type']),
+            'accounts' => Account::active()->get(['id', 'name', 'type']),
             'taxRate' => (float) $settings['tax_rate'],
             'taxLabel' => $settings['tax_label'] ?: 'Tax',
         ];

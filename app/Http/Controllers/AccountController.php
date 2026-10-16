@@ -9,6 +9,8 @@ class AccountController extends Controller
 {
     public function index()
     {
+        Account::ensureDefaults();
+
         return view('accounts.index', ['accounts' => Account::orderBy('id')->get()]);
     }
 

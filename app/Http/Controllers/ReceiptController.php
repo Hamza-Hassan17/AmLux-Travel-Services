@@ -50,7 +50,7 @@ class ReceiptController extends Controller
             'customers' => Customer::orderBy('type')->orderBy('name')->get(['id', 'name', 'phone', 'type']),
             'customer' => $customer,
             'open' => $customer ? $this->openItems($customer) : null,
-            'accounts' => Account::where('is_active', true)->get(),
+            'accounts' => Account::active()->get(),
             'invoice_id' => $request->query('invoice_id'),
         ]);
     }

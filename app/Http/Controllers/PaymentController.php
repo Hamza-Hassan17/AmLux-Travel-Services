@@ -59,7 +59,7 @@ class PaymentController extends Controller
             'supplier' => $supplier,
             'customer' => $customer,
             'open' => $supplier ? $this->supplierItems($supplier) : ($customer ? $this->refundItems($customer) : null),
-            'accounts' => Account::where('is_active', true)->get(),
+            'accounts' => Account::active()->get(),
         ]);
     }
 

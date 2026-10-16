@@ -34,7 +34,7 @@ class DashboardController extends Controller
                 })->count(),
                 'payable' => $payable,
             ],
-            'accounts' => Account::where('is_active', true)->orderBy('id')->get(),
+            'accounts' => Account::active()->get(),
             'unpaid' => $unpaid->take(8),
             'upcoming' => FlightBooking::with(['customer', 'invoice'])->where('status', '!=', 'cancelled')
                 ->whereBetween('departure_at', [$now, $now->copy()->addDays(14)])->orderBy('departure_at')->limit(8)->get(),
