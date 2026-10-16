@@ -34,6 +34,11 @@ class AccountController extends Controller
             'opening_balance' => 'nullable|numeric',
             'is_active' => 'nullable|boolean',
         ]);
+        if (! $request->boolean('is_active') && $account->is_active
+            && ! Account::where('is_active', true)->where('id', '!=', $account->id)->exists()) {
+            return back()->withErrors(['account' => 'At least one account must stay active so receipts and payments have a mode of payment.']);
+        }
+
         $account->update([
             'name' => $data['name'],
             'opening_balance' => $data['opening_balance'] ?? 0,
